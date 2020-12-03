@@ -10,7 +10,7 @@ s.homepage = 'http://baidu.com'
 
 s.authors = { 'lwz' => 'heywenzhong@163.com' }
 
-s.source = { :git => 'https://github.com/codeliu6572/CustomAlertView.git', :tag => s.version }
+s.source = { :git => 'https://github.com/heywenzhong/LWZBtn.git', :tag => s.version }
 
 s.requires_arc = true
 
