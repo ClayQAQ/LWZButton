@@ -14,7 +14,7 @@ PODS:
   - AFNetworking/Serialization (4.0.1)
   - AFNetworking/UIKit (4.0.1):
     - AFNetworking/NSURLSession
-  - LWZButton (1.0.0)
+  - LWZButton (1.0.1)
   - Masonry (1.1.0)
   - ReactiveObjC (3.1.1)
 
@@ -33,7 +33,7 @@ SPEC REPOS:
 
 SPEC CHECKSUMS:
   AFNetworking: 7864c38297c79aaca1500c33288e429c3451fdce
-  LWZButton: c4c95812348db2c695dd46e07010772ef1b857df
+  LWZButton: 7dd44b4122934dc8b19adfcd6358aba1aa6d02cf
   Masonry: 678fab65091a9290e40e2832a55e7ab731aad201
   ReactiveObjC: 011caa393aa0383245f2dcf9bf02e86b80b36040
 
