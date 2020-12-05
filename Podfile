@@ -6,4 +6,6 @@ source 'https://github.com/CocoaPods/Specs.git'
 target '常驻线程' do
 	pod 'AFNetworking', '~>4.0'
 	pod 'Masonry'
+  pod 'ReactiveObjC'
+  pod 'LWZButton'
 end

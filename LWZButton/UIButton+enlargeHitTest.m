@@ -54,7 +54,7 @@ static char leftNameKey;
 
 - (UIView *)hitTest:(CGPoint) point withEvent:(UIEvent*) event
 {
-    NSLog(@"super hitTest - %@",[super hitTest:point withEvent:event]);//点外面是null, 点btn是UIButton.
+//    NSLog(@"super hitTest - %@",[super hitTest:point withEvent:event]);//点外面是null, 点btn是UIButton.
     CGRect rect = [self enlargedRect];
     if (CGRectEqualToRect(rect, self.bounds))
     {
@@ -63,7 +63,7 @@ static char leftNameKey;
     if (CGRectContainsPoint(rect, point) ) {
         return  self;
     } else {
-        return nil;
+        return [super hitTest:point withEvent:event];
     }
 //    return CGRectContainsPoint(rect, point) ? self : nil;
 }

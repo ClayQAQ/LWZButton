@@ -14,21 +14,29 @@ PODS:
   - AFNetworking/Serialization (4.0.1)
   - AFNetworking/UIKit (4.0.1):
     - AFNetworking/NSURLSession
+  - LWZButton (1.0.0)
   - Masonry (1.1.0)
+  - ReactiveObjC (3.1.1)
 
 DEPENDENCIES:
   - AFNetworking (~> 4.0)
+  - LWZButton
   - Masonry
+  - ReactiveObjC
 
 SPEC REPOS:
   https://github.com/CocoaPods/Specs.git:
     - AFNetworking
+    - LWZButton
     - Masonry
+    - ReactiveObjC
 
 SPEC CHECKSUMS:
   AFNetworking: 7864c38297c79aaca1500c33288e429c3451fdce
+  LWZButton: c4c95812348db2c695dd46e07010772ef1b857df
   Masonry: 678fab65091a9290e40e2832a55e7ab731aad201
+  ReactiveObjC: 011caa393aa0383245f2dcf9bf02e86b80b36040
 
-PODFILE CHECKSUM: 0380bbea6ce51fd58600184816c287d5ac068224
+PODFILE CHECKSUM: acfa50481af4808476ef21715bc58a3d9a6c939a
 
 COCOAPODS: 1.8.3
