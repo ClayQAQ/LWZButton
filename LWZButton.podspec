@@ -2,7 +2,7 @@ Pod::Spec.new do |s|
 
 s.name = 'LWZButton'
 
-s.version = '1.0.0'
+s.version = '1.0.1'
 
 s.summary = 'An enlarged button in iOS.'
 
