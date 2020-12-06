@@ -17,7 +17,7 @@
     self.window = [[UIWindow alloc] initWithWindowScene:ws];
 //    self.window.userInteractionEnabled = NO;
     ViewController *vc = [ViewController new];
-    vc.view.backgroundColor = [UIColor colorNamed:@"wz_color"];
+//    vc.view.backgroundColor = [UIColor colorNamed:@"wz_color"];
     self.window.rootViewController = vc;
     [self.window makeKeyAndVisible];
 }

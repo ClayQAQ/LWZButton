@@ -14,6 +14,7 @@
 #import <Masonry.h>
 
 #import "UIButton+enlargeHitTest.h"
+#import "ReactiveObjC.h"
 
 @interface ViewController ()
 @property (nonatomic, strong) NSString *mark;
@@ -35,13 +36,70 @@ NSString *mutexStr = @"";
 //    [self singletonAndKVO];
 //    [self pointer_and_object_test];
 //    [self invocation_invoke_test];
-    [self btn_hitTest];
+//    [self btn_hitTest];
 //    [self some_stringTest];
 //    [self AFN_test];
 //    [self sessionAbout];
 //    (void)self.masonryAbout;
 //    [self operationTest];
 //    [self mutexAndSpinLock];
+    [self RAC_test];
+}
+
+- (void)RAC_test {
+    //1.创建信号, 信号有容量为1的可变数组
+    RACSubject *subject = [RACSubject subject];
+    //2.订阅信号 方法里有创建订阅者 订阅者保存了block动作, 信号的数组保存了订阅者
+    [subject subscribeNext:^(id  _Nullable x) {
+        NSLog(@"execute-> %@",x);
+    }];
+    //3.发送信号  回调动作block
+    [subject sendNext:@"lwz"];
+
+
+    //把任何都可以包装成信号, 并subscribeNext: 传入block. 返回的RACDisposable可以取消订阅.
+    //rac皆为block形式, 在哪订阅在哪写代码.
+    //按钮点击
+    UIButton *btn = [UIButton buttonWithType:UIButtonTypeSystem];
+    [[btn rac_signalForControlEvents:UIControlEventTouchUpInside] subscribeNext:^(__kindof UIControl * _Nullable x) {
+        NSLog(@"tap!! %@",x);
+        btn.frame = CGRectMake(10, 10, 30, 40);
+    }];
+    btn.backgroundColor = UIColor.redColor;
+    btn.frame = CGRectMake(50, 50, 50, 30);
+    [self.view addSubview:btn];
+
+    //方法调用
+    [[self rac_signalForSelector:@selector(rac_sel:)] subscribeNext:^(RACTuple * _Nullable x) {
+        NSLog(@"rac监听参数:%@",x);
+    }];
+    [self rac_sel:@"哦吼"];//一个方法的调用,其他类的方法也都可以
+
+    //kvo / 属性
+    RACDisposable *disposable = [[btn rac_valuesForKeyPath:@"frame" observer:nil] subscribeNext:^(id  _Nullable x) {
+        NSLog(@"btn frame 被set了!");
+    }];
+//    [disposable dispose]; //可以取消掉监听
+
+    //通知
+    UITextField *field = [[UITextField alloc] initWithFrame:CGRectMake(100, 100, 100, 30)];
+    field.backgroundColor = [UIColor grayColor];
+    field.placeholder = @"在此输入";
+    [self.view addSubview:field];
+    [[[NSNotificationCenter defaultCenter] rac_addObserverForName:UIKeyboardWillShowNotification object:nil] subscribeNext:^(NSNotification * _Nullable x) {
+        NSLog(@"键盘要弹出啦!");
+    }];
+
+    //监听文本框 textField
+    [field.rac_textSignal subscribeNext:^(NSString * _Nullable x) {
+        NSLog(@"内容为: %@",x);
+    }];
+
+
+}
+
+- (void)rac_sel:(NSString *)str {
+
 }
 
 - (void)mutexAndSpinLock {
@@ -202,7 +260,7 @@ NSString *mutexStr = @"";
     //kvo
     LWZSingleton *singleton = [LWZSingleton shareSingleton];
     [singleton addObserver:self forKeyPath:@"age" options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:@"haha"];
-//    singleton.age = 2;
+    singleton.age = 2;
 
 //    //kvo触发唯一条件, 这两个缺一不可
 //    [singleton willChangeValueForKey:@"age"];
@@ -412,7 +470,9 @@ void msg_forwarding() {
 
 //kvo
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context {
-//    NSLog(@"%@, %@,%@",keyPath,change,context);
+    NSLog(@"%@\n %@\n%@\n%@",object,keyPath,change,context);
+    NSLog(@"%@",change[@"new"]);
+    //object 是被观察对象,  keyPath被观察属性, change属性值字典 old new,   context观察时传入的参数.
 }
 
 
