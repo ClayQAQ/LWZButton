@@ -15,6 +15,7 @@
 
 #import "UIButton+enlargeHitTest.h"
 #import "ReactiveObjC.h"
+#import "NSObject+RACKVOWrapper.h"
 
 @interface ViewController ()
 @property (nonatomic, strong) NSString *mark;
@@ -33,17 +34,17 @@ NSString *mutexStr = @"";
     [super viewDidLoad];
 //    [self gcdAndThread];
 //    [self taggedPointer];
-//    [self singletonAndKVO];
+//    [self singletonAndKVO]; //单例和KVO
 //    [self pointer_and_object_test];
-//    [self invocation_invoke_test];
+    [self invocation_invoke_test]; //invocation的使用 performSelector返回值 方法转发
 //    [self btn_hitTest];
-//    [self some_stringTest];
-//    [self AFN_test];
-//    [self sessionAbout];
-//    (void)self.masonryAbout;
-//    [self operationTest];
-//    [self mutexAndSpinLock];
-    [self RAC_test];
+//    [self some_stringTest]; //一些特殊字符串
+//    [self AFN_test]; //AFN使用
+//    [self sessionAbout]; //session使用
+//    (void)self.masonryAbout; //masonry使用
+//    [self operationTest]; //线程调用
+//    [self mutexAndSpinLock]; //锁的实践 NSLock
+//    [self RAC_test]; //RAC基本使用
 }
 
 - (void)RAC_test {
@@ -76,10 +77,22 @@ NSString *mutexStr = @"";
     [self rac_sel:@"哦吼"];//一个方法的调用,其他类的方法也都可以
 
     //kvo / 属性
+    //"NSObject+RACKVOWrapper.h" 的方法, 保留系统kvo风格, 但是啰嗦
+    [btn rac_observeKeyPath:@"frame" options:NSKeyValueObservingOptionNew observer:nil block:^(id value, NSDictionary *change, BOOL causedByDealloc, BOOL affectedOnlyLastComponent) {
+        NSLog(@"btn frame 被set了!");
+    }];
+
+    //直接观察键值
     RACDisposable *disposable = [[btn rac_valuesForKeyPath:@"frame" observer:nil] subscribeNext:^(id  _Nullable x) {
         NSLog(@"btn frame 被set了!");
     }];
-//    [disposable dispose]; //可以取消掉监听
+    [disposable dispose]; //可以取消掉监听
+
+    //RAC宏
+    [RACObserve(btn, frame) subscribeNext:^(id  _Nullable x) {
+        NSLog(@"btn frame 被set了!");
+    }];
+
 
     //通知
     UITextField *field = [[UITextField alloc] initWithFrame:CGRectMake(100, 100, 100, 30)];
@@ -95,7 +108,17 @@ NSString *mutexStr = @"";
         NSLog(@"内容为: %@",x);
     }];
 
+    //定时器
+    [[RACSignal interval:1.0 onScheduler:[RACScheduler scheduler]] subscribeNext:^(NSDate * _Nullable x) {
+        NSLog(@"%@ --timer-- %@",x,[NSThread currentThread]);  //common mode, 子线程, x返回的时间
+    }];
 
+    //combineLatest
+//    RACSubject *s1 = [RACSubject subject];
+//    RACSubject *s2 = [RACSubject subject];
+//    [RACSignal combineLatest:@[s1,s2] reduce:^id _Nonnull{
+//        <#code#>
+//    }]
 }
 
 - (void)rac_sel:(NSString *)str {
@@ -308,15 +331,55 @@ NSString *mutexStr = @"";
 - (void)invocation_invoke_test {
     //invocation invoke
     NSString *str = @"我的调用";
-    NSMethodSignature *signature = [ViewController instanceMethodSignatureForSelector:@selector(wz_nslog:)];
-    NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
+    __unused NSMethodSignature *signature = [ViewController instanceMethodSignatureForSelector:@selector(wz_nslog:)];
+//    NSMethodSignature *s = [NSMethodSignature methodSignatureForSelector:@selector(wz_nslog:)]; // s=nil 下一步崩溃.
+    NSMethodSignature *s = [NSMethodSignature signatureWithObjCTypes:"v@:@"]; // 这个可以
+    NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:s]; //ObjCTypes = @"v@:@" void self对象 _cmd id对象
 //    invocation.target = self;
     invocation.selector = @selector(wz_nslog:);
     [invocation setArgument:&str atIndex:2];
     [invocation invokeWithTarget:self];
 
     //消息转发 _msg_forwarding
-    [self performSelector:@selector(foo)];
+//    [self performSelector:@selector(foo)];
+
+    //测试- (id)performSelector: , 调用返回值非id类型, 是否有返回值.
+    BOOL b = [self performSelector:@selector(testReturnTypeOfPerformSel)];
+    NSLog(@"BOOL = %i",b);
+    //NSLog(@"BOOL = %@",[self performSelector:@selector(testReturnTypeOfPerformSel)]); //会崩溃
+
+
+    //有返回值的invocation
+    NSLog(@"------测试-----有返回值的invocation------");
+//    NSMethodSignature *ss = [NSMethodSignature methodSignatureForSelector:@selector(invocationRetype:)]; //崩溃 因为ss返回为nil.
+    //methodSignatureForSelector: 是去找sel, 必须指明对象, 才能根据isa找到对应的方法!
+    NSMethodSignature *ss = [self methodSignatureForSelector:@selector(invocationRetype:)];
+    const char *returnType = ss.methodReturnType;
+    if (strcmp(returnType, @encode(NSInteger)) == 0) {
+        NSLog(@"类型为:%s",returnType);
+
+        NSInvocation *ii = [NSInvocation invocationWithMethodSignature:ss];
+        [ii setSelector:@selector(invocationRetype:)];
+        [ii setTarget:self];
+        NSInteger integer = 123;
+        [ii setArgument:&integer atIndex:2];
+        [ii invoke];
+        NSInteger returnValue = 0;
+        [ii getReturnValue:&returnValue];
+        NSLog(@"getReturnValue: %li",returnValue);
+    } else {
+        NSLog(@"类型不对! 不是NSInteger!");
+    }
+}
+
+- (NSInteger)invocationRetype:(NSInteger)x {
+    NSLog(@"invocationRetype!");
+    return x;
+}
+
+- (NSInteger)testReturnTypeOfPerformSel {
+    NSLog(@"testReturnTypeOfPerformSel!");
+    return 233;
 }
 
 - (void)decimal_number {
@@ -443,7 +506,7 @@ NSString *mutexStr = @"";
     return [super methodSignatureForSelector:aSelector];
 }
 
-//这里已经不会崩溃了, 可以根据情况自由发挥了.
+//这里已经不会崩溃了( 可以什么都不做m,但是至少重写出此方法), 可以根据情况自由发挥了.
 - (void)forwardInvocation:(NSInvocation *)anInvocation {
     if (anInvocation.selector == @selector(foo)) {
         anInvocation.selector = @selector(invocationSel);
