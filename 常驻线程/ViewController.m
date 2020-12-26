@@ -16,6 +16,7 @@
 #import "UIButton+enlargeHitTest.h"
 #import "ReactiveObjC.h"
 #import "NSObject+RACKVOWrapper.h"
+#import "SendActionBtn.h"
 
 @interface ViewController ()
 @property (nonatomic, strong) NSString *mark;
@@ -32,12 +33,26 @@ NSString *mutexStr = @"";
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    //injectione的通知, 功能等价于 - (void)injected {方法.
+//    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(configureView) name:@"INJECTION_BUNDLE_NOTIFICATION" object:nil];
+
+//#ifdef DEBUG //都可
+#if DEBUG
+    NSLog(@"debug");
+#else
+    NSLog(@"release");
+#endif
+
+//    if (@available(iOS 13,*)) {
+//
+//    }
+
 //    [self gcdAndThread];
 //    [self taggedPointer];
 //    [self singletonAndKVO]; //单例和KVO
 //    [self pointer_and_object_test];
-    [self invocation_invoke_test]; //invocation的使用 performSelector返回值 方法转发
-//    [self btn_hitTest];
+//    [self invocation_invoke_test]; //invocation的使用 performSelector返回值 方法转发
+//    [self btn_hitTest]; //增加btn点击范围; 动态库注入injection;
 //    [self some_stringTest]; //一些特殊字符串
 //    [self AFN_test]; //AFN使用
 //    [self sessionAbout]; //session使用
@@ -45,6 +60,32 @@ NSString *mutexStr = @"";
 //    [self operationTest]; //线程调用
 //    [self mutexAndSpinLock]; //锁的实践 NSLock
 //    [self RAC_test]; //RAC基本使用
+    [self sendActionBtn];
+}
+
+- (void)sendActionBtn {
+    SendActionBtn *btn = [[SendActionBtn alloc] initWithFrame:CGRectMake(80, 200, 50, 50)];
+    btn.backgroundColor = UIColor.yellowColor;
+    [btn addTarget:self action:@selector(sendAct) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:btn];
+}
+
+- (void)sendAct {
+    NSLog(@"sendAct!!");
+}
+
+- (void)injected {
+    NSLog(@"i've been injected: %@",self);
+    [self configureView];
+}
+
+- (void)configureView {
+    NSLog(@"configureView");
+    UIView *v = [UIView new];
+    v.frame = CGRectMake(100, 300, 30, 30);
+    v.backgroundColor = UIColor.blueColor;
+    [self.view addSubview:v];
+    [self viewDidLoad]; //... 反正能改btn_hitTest方法的view颜色
 }
 
 - (void)RAC_test {
@@ -392,9 +433,15 @@ NSString *mutexStr = @"";
 }
 
 - (void)btn_hitTest {
+    //测试injection
+    UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(35, 400, 400, 50)];
+    label.textColor = UIColor.redColor;
+    label.text = @"圣诞节发了肯定是gggg";
+    [self.view addSubview:label];
+
     //uiview
     UIView *view = [UIView new];
-    view.backgroundColor = UIColor.blueColor;
+    view.backgroundColor = UIColor.yellowColor;
     view.frame = CGRectMake(20, 20, 300, 300);
     [self.view addSubview:view];
 

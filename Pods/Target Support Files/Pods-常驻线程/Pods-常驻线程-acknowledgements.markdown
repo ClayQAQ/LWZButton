@@ -24,6 +24,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
+## A_Category
+
+MIT
+
+
+## CTMediator
+
+MIT
+
+
 ## LWZButton
 
 MIT License

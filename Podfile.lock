@@ -1,4 +1,6 @@
 PODS:
+  - A_Category (6):
+    - CTMediator
   - AFNetworking (4.0.1):
     - AFNetworking/NSURLSession (= 4.0.1)
     - AFNetworking/Reachability (= 4.0.1)
@@ -14,11 +16,13 @@ PODS:
   - AFNetworking/Serialization (4.0.1)
   - AFNetworking/UIKit (4.0.1):
     - AFNetworking/NSURLSession
+  - CTMediator (44)
   - LWZButton (1.0.1)
   - Masonry (1.1.0)
   - ReactiveObjC (3.1.1)
 
 DEPENDENCIES:
+  - A_Category
   - AFNetworking (~> 4.0)
   - LWZButton
   - Masonry
@@ -27,16 +31,21 @@ DEPENDENCIES:
 SPEC REPOS:
   https://github.com/CocoaPods/Specs.git:
     - AFNetworking
+    - CTMediator
     - LWZButton
     - Masonry
     - ReactiveObjC
+  https://github.com/ModulizationDemo/PrivatePods.git:
+    - A_Category
 
 SPEC CHECKSUMS:
+  A_Category: 136fdc0448c7fa1bded34cfcd25bb9e17d80c504
   AFNetworking: 7864c38297c79aaca1500c33288e429c3451fdce
+  CTMediator: 933dba523da87bf875e4a7e8728945fbc512f1d2
   LWZButton: 7dd44b4122934dc8b19adfcd6358aba1aa6d02cf
   Masonry: 678fab65091a9290e40e2832a55e7ab731aad201
   ReactiveObjC: 011caa393aa0383245f2dcf9bf02e86b80b36040
 
-PODFILE CHECKSUM: acfa50481af4808476ef21715bc58a3d9a6c939a
+PODFILE CHECKSUM: c94311695a15fc103ec77edd3b1b34fd172dd8b4
 
 COCOAPODS: 1.8.3

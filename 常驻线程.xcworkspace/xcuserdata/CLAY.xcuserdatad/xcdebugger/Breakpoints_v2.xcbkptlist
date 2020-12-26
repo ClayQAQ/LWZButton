@@ -14,25 +14,9 @@
             filePath = "&#x5e38;&#x9a7b;&#x7ebf;&#x7a0b;/ViewController.m"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "421"
-            endingLineNumber = "421"
-            landmarkName = "ViewController"
-            landmarkType = "3">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "B4053519-FA0C-4595-8054-27C27558C71B"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Pods/AFNetworking/UIKit+AFNetworking/AFImageDownloader.m"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "126"
-            endingLineNumber = "126"
-            landmarkName = "+defaultURLCache"
+            startingLineNumber = "462"
+            endingLineNumber = "462"
+            landmarkName = "-some_stringTest"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -62,8 +46,8 @@
             filePath = "&#x5e38;&#x9a7b;&#x7ebf;&#x7a0b;/ViewController.m"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "337"
-            endingLineNumber = "337"
+            startingLineNumber = "372"
+            endingLineNumber = "372"
             landmarkName = "-invocation_invoke_test"
             landmarkType = "7">
          </BreakpointContent>
@@ -78,9 +62,9 @@
             filePath = "&#x5e38;&#x9a7b;&#x7ebf;&#x7a0b;/ViewController.m"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "504"
-            endingLineNumber = "504"
-            landmarkName = "-methodSignatureForSelector:"
+            startingLineNumber = "545"
+            endingLineNumber = "545"
+            landmarkName = "-forwardingTargetForSelector:"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -94,9 +78,41 @@
             filePath = "&#x5e38;&#x9a7b;&#x7ebf;&#x7a0b;/ViewController.m"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "348"
-            endingLineNumber = "348"
+            startingLineNumber = "383"
+            endingLineNumber = "383"
             landmarkName = "-invocation_invoke_test"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "3BB7C2D1-1C98-4DC5-AA77-12B2F8069F90"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "&#x5e38;&#x9a7b;&#x7ebf;&#x7a0b;/SendActionBtn.m"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "22"
+            endingLineNumber = "22"
+            landmarkName = "-sendAction:to:forEvent:"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "CE0C343E-9324-4499-A19B-59158138908A"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "&#x5e38;&#x9a7b;&#x7ebf;&#x7a0b;/UIControl+hookSendAction.m"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "31"
+            endingLineNumber = "31"
+            landmarkName = "-hookSendAction:to:forEvent:"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
