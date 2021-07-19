@@ -18,6 +18,81 @@
 #import "NSObject+RACKVOWrapper.h"
 #import "SendActionBtn.h"
 
+#import "AVFoundation/AVFoundation.h"
+
+#import "MyThread.h"
+
+//Pet - Dog  验证+initialize相关
+@interface Pet : NSObject
+
+- (void)run;
+
+@end
+
+@implementation Pet
+
++ (void)initialize {
+//    NSLog(@"%@ -- %s",self,__func__);
+//    [self name];
+
+//    if (self == [Pet class]) { //这样只会调用一次, 否则父类到子类都要调用一次
+//        NSLog(@"%@ -- %s",self,__func__);
+//        [self name];
+//    }
+}
+
+- (void)run {
+    NSLog(@"%@ run...",self);
+}
+
++ (void)echo {
+    [self name];
+}
+
++ (void)name {
+    NSLog(@"name:pet");
+}
+
+@end
+
+@interface Dog : Pet
+
+@end
+
+@implementation Dog
+
+//验证父类是否能调用子类imp  : 不能
++ (void)load {
+    Method originMethod = class_getInstanceMethod(self, @selector(run));
+    Method swizzleMethod = class_getInstanceMethod(self, @selector(x_run));
+    method_exchangeImplementations(originMethod, swizzleMethod); //亲测崩溃 -[Pet x_run]: unrecognized selector sent to instance
+
+//    BOOL didAddMethod = class_addMethod(self, @selector(run), method_getImplementation(swizzleMethod), method_getTypeEncoding(swizzleMethod));
+//    if (didAddMethod) {
+//        class_replaceMethod(self, @selector(x_run), method_getImplementation(originMethod), method_getTypeEncoding(originMethod));
+//    } else {
+//        method_exchangeImplementations(originMethod, swizzleMethod);
+//    }
+}
+
+- (void)x_run {
+    NSLog(@"------ Hook run --------");
+    [self x_run];
+}
+
+////并没有改变结果
+//+ (void)initialize {
+//    NSLog(@"%@ ~~ %s",self,__func__);
+//    [self name];
+//}
+
++ (void)name {
+    NSLog(@"name:dog");
+}
+
+@end
+
+
 @interface ViewController ()
 @property (nonatomic, strong) NSString *mark;
 //@property (atomic, strong) NSString *mark;
@@ -36,18 +111,18 @@ NSString *mutexStr = @"";
     //injectione的通知, 功能等价于 - (void)injected {方法.
 //    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(configureView) name:@"INJECTION_BUNDLE_NOTIFICATION" object:nil];
 
-//#ifdef DEBUG //都可
-#if DEBUG
-    NSLog(@"debug");
-#else
-    NSLog(@"release");
-#endif
+////#ifdef DEBUG //都可
+//#if DEBUG
+//    NSLog(@"debug");
+//#else
+//    NSLog(@"release");
+//#endif
 
 //    if (@available(iOS 13,*)) {
 //
 //    }
 
-//    [self gcdAndThread];
+//    [self gcdAndThread]; //常驻线程
 //    [self taggedPointer];
 //    [self singletonAndKVO]; //单例和KVO
 //    [self pointer_and_object_test];
@@ -60,7 +135,123 @@ NSString *mutexStr = @"";
 //    [self operationTest]; //线程调用
 //    [self mutexAndSpinLock]; //锁的实践 NSLock
 //    [self RAC_test]; //RAC基本使用
-    [self sendActionBtn];
+//    [self sendActionBtn]; //按钮btn
+//    [self gcd_barrier]; //gcd barrier
+//    [self audioAndMovie]; //音视频
+//    (void)self.aboutArray; //数组与copy/strong
+//    UIColor *color = [UIColor performSelector:@selector(redColor)]; //isa应用. 类调用NSObject的实例方法
+//    [self testPerformSel_returnType]; //测试performSel的返回值是否是id? 虽然写的是,但可能不是, 强行当id用还会崩溃
+//    [self for_forin_enumerate]; //字典遍历3种方式
+//    [self gcd_dispatch_semaphore]; //信号量 gcd锁 //信号量semaphore , +1 signal, -1 wait,  >=0都不阻塞
+//    [self initializeAbout]; //+initialize 初始化方法相关
+//    [self testMethodSwizzling]; //测试MethodSwizzling, 为什么非要判断 "origin方法在是在父类 而非当前类"
+}
+
+- (void)testMethodSwizzling {
+    Dog *dog = [Dog new];
+    [dog run];
+    Pet *pet = [Pet new];
+    [pet run];
+}
+
+
+- (void)initializeAbout {
+
+    __unused Dog *dog = [[Dog alloc] init];
+    __unused Dog *dog2 = [[Dog alloc] init];
+
+//    Pet *pet = [[Pet alloc] init];
+//    Pet *pet2 = [[Pet alloc] init];
+
+//    //那应该就是+initialize方法特殊了. 其调用从父类到子类都调用, 并且receiver也会从父类到子类
+//    [Dog echo];
+}
+
+
+//static dispatch_semaphore_t semap;
+- (void)gcd_dispatch_semaphore {  //信号量semaphore , +1 signal, -1 wait,  >=0都不阻塞
+//    dispatch_semaphore_t semap = dispatch_semaphore_create(1);//会崩溃, 应该是局部变量释放了  在block造成野指针问题.  使用全局变量保证semap始终存在, 或者静态局部估计也行.
+    static dispatch_semaphore_t semap;
+    semap = dispatch_semaphore_create(1);
+    NSLog(@"1");
+    dispatch_semaphore_wait(semap, DISPATCH_TIME_FOREVER);
+    NSLog(@"0"); //semaphore = 0时, 打印
+
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        NSLog(@"queue");
+        dispatch_semaphore_signal(semap);
+    });
+
+    dispatch_semaphore_wait(semap, DISPATCH_TIME_FOREVER);
+    NSLog(@"-1");
+
+
+}
+
+- (void)for_forin_enumerate {
+    NSDictionary *dic = @{@"1":@"one",@"2":@"two",@"3":@"three"};
+
+    //1.
+    NSArray *keys = dic.allKeys;
+    for (int i = 0; i<dic.count; i++) {
+        NSLog(@"%@ - %@",keys[i],dic[keys[i]]);
+    }
+
+    //2.
+    for (id key in dic) {
+        NSLog(@"%@ - %@",key,dic[key]);
+    }
+
+    //3.
+    [dic enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+        NSLog(@"%@ - %@",key,obj);
+        *stop = YES;
+    }];
+}
+
+- (void)testPerformSel_returnType {
+        //测试performSel的返回值是否是id? 虽然写的是,但可能不是, 强行当id用还会崩溃
+        [self performSelector:@selector(fooo)];
+    //    NSLog(@"performSel return value = %@",i);
+}
+
+- (int)fooo{
+    return 3;
+}
+
+- (void)aboutArray {
+    NSArray *arr = [NSArray array];
+    NSLog(@"1 arr= %@",arr);
+    NSMutableArray *mArr = [NSMutableArray arrayWithObjects:@1, nil];
+
+    arr = mArr;
+    NSLog(@"2 arr= %@",arr);
+
+    [mArr addObject:@2];
+    NSLog(@"3 arr= %@",arr);
+}
+
+- (void)audioAndMovie {
+    AVCaptureDevice *videoDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+}
+
+- (void)gcd_barrier {
+    dispatch_queue_t q = dispatch_queue_create("barrier_conc", DISPATCH_QUEUE_CONCURRENT);
+    dispatch_async(q, ^{
+        NSLog(@"任务1");
+        sleep(2);
+    });
+    dispatch_async(q, ^{
+        NSLog(@"任务2");
+        sleep(2);
+    });
+    dispatch_barrier_async(q, ^{  //一旦加入, 栅栏就形成了.  前面未执行完的继续执行, 后面的要等栅栏执行完毕.
+        NSLog(@"barrier 执行!");
+        sleep(2);
+    });
+    dispatch_async(q, ^{
+        NSLog(@"任务3");
+    });
 }
 
 - (void)sendActionBtn {
@@ -167,10 +358,16 @@ NSString *mutexStr = @"";
 }
 
 - (void)mutexAndSpinLock {
+//    self.lock = [[NSRecursiveLock alloc] init];  //递归锁 可嵌套lock
     self.lock = [[NSLock alloc] init];
-    [self changeMutexStr:@"1"];
-    [self changeMutexStr:@"2"]; //既然被锁住就一直等 oke了就继续执行.
-    NSLog(@"mutex: %@",mutexStr);
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        [self changeMutexStr:@"1"];
+    });
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        [self changeMutexStr:@"2"];
+    });
+
+    NSLog(@"end");
 }
 
 - (void)changeMutexStr:(NSString *)str {
@@ -180,16 +377,15 @@ NSString *mutexStr = @"";
 //        mutexStr = str;
 //    }
 
+
+//    self.lock = [[NSLock alloc] init];  //这样多线程进来调用,不是同一把锁 lock无效
     [_lock lock];
+//    [_lock lock]; //非递归锁  不可嵌套lock
+    NSLog(@"mutex: %@",str);
     sleep(2);
     NSLog(@"sleep");
-    mutexStr = str;
+//    [_lock unlock];
     [_lock unlock];
-
-// 结果都一样.
-//    2020-11-16 16:49:07.843502+0800 常驻线程[35935:64284431] sleep
-//    2020-11-16 16:49:09.844787+0800 常驻线程[35935:64284431] sleep
-//    2020-11-16 16:49:09.845099+0800 常驻线程[35935:64284431] mutex: 2
 
 }
 
@@ -221,7 +417,8 @@ NSString *mutexStr = @"";
     view.backgroundColor = UIColor.blueColor;
     [self.view addSubview:view];
     NSArray *constraints = [view mas_makeConstraints:^(MASConstraintMaker *make) {
-        //make.height返回NSViewConstraint, make.height.width返回NSCompositeConstraint.
+        //maker.height返回MASViewConstraint, make.height.width返回MASCompositeConstraint.
+//        make.height.mas_equalTo(30);
         make.height.width.mas_equalTo(60);
         make.centerX.equalTo(self.view);
         make.centerY.equalTo(self.view);
@@ -300,9 +497,9 @@ NSString *mutexStr = @"";
 }
 
 - (void)gcdAndThread {
-    dispatch_queue_t q = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+    __unused dispatch_queue_t q = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
 
-    NSThread *thread = [[NSThread alloc] initWithTarget:self selector:@selector(threadElse) object:nil];
+    MyThread *thread = [[MyThread alloc] initWithTarget:self selector:@selector(threadElse) object:nil];
     thread.name = @"my private thread";
     [thread start];
 
@@ -468,52 +665,29 @@ NSString *mutexStr = @"";
 
 
 - (void)AFN_test {
-    /*
-     typedef NS_ENUM(NSInteger, AFNetworkReachabilityStatus) {
-         AFNetworkReachabilityStatusUnknown          = -1,
-         AFNetworkReachabilityStatusNotReachable     = 0,
-         AFNetworkReachabilityStatusReachableViaWWAN = 1,
-         AFNetworkReachabilityStatusReachableViaWiFi = 2,
-     };
-
-     */
-    AFNetworkReachabilityManager *reachabilityManager = [AFNetworkReachabilityManager sharedManager];
-    [reachabilityManager setReachabilityStatusChangeBlock:^(AFNetworkReachabilityStatus status) {
-        switch (status) {
-            case AFNetworkReachabilityStatusUnknown:
-                NSLog(@"未知网络~");
-                break;
-            case AFNetworkReachabilityStatusNotReachable:
-                NSLog(@"无网络~");
-                break;
-            case AFNetworkReachabilityStatusReachableViaWWAN:
-                NSLog(@"使用数据网络~");
-                break;
-            case AFNetworkReachabilityStatusReachableViaWiFi:
-                NSLog(@"使用wifi~");
-                break;
-            default:
-                break;
-        }
-    }];
-    //开始监控
-    [reachabilityManager startMonitoring];
-
-
+//    NSLog(@"caches path:\n%@",NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES));
     //AFN
     NSString *urlStr = @"https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=3670756122,3973698678&fm=26&gp=0.jpg";
+
+//    NSString *ssl_str = @"https://www.baidu.com/s?wd=ios&rsv_spt=1&rsv_iqid=0xc60716730000179c&issp=1&f=8&rsv_bp=1&rsv_idx=2&ie=utf-8&rqlang=cn&tn=baiduhome_pg&rsv_enter=1&rsv_dl=tb&rsv_btype=t&inputT=810&rsv_t=4cd8T9fffLAqYmzGhdU2oAuktuZga89Ylltj21G8bhMs6xyk6Y8c9xaHiT0SWnamNdtW&oq=ios%2520uuid&rsv_pq=a515c4200001bd76&rsv_sug3=20&rsv_sug1=15&rsv_sug7=100&rsv_sug2=0&rsv_sug4=810";
+
     //imageView
     UIImageView *imageView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 100, 300, 500)];
     imageView.backgroundColor = UIColor.blackColor;
     imageView.contentMode = UIViewContentModeScaleAspectFit;
     [self.view addSubview:imageView];
-    [imageView setImageWithURL:[NSURL URLWithString:urlStr]]; //相比httpManager一步就可以.
-
+//    [imageView setImageWithURL:[NSURL URLWithString:urlStr]]; //相比httpManager一步就可以.
 
     //manager
     AFHTTPSessionManager *manager = [AFHTTPSessionManager manager];
-    manager.responseSerializer = [AFHTTPResponseSerializer serializer];
-//    manager.responseSerializer.acceptableContentTypes = [NSSet setWithObjects:@"image/jpeg", nil];
+    manager.responseSerializer = [AFHTTPResponseSerializer serializer]; //默认是json(键值对字符串), 我们是图片数据 所以要设置下
+//    [manager GET:ssl_str parameters:nil headers:nil progress:nil success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
+//        NSString *str = [[NSString alloc] initWithData:responseObject encoding:NSUTF8StringEncoding];
+//        NSLog(@"%@",str);
+//    } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
+//
+//    }];
+//
     [manager GET:urlStr parameters:nil headers:nil progress:^(NSProgress * _Nonnull downloadProgress) {
         NSLog(@"progress = %@",downloadProgress);
     } success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
@@ -523,7 +697,70 @@ NSString *mutexStr = @"";
     } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
         NSLog(@"error = %@",error);
     }];
+
+
+//    manager.completionQueue = dispatch_get_global_queue(0, 0);//默认从主队列回调
+//    manager.responseSerializer.acceptableContentTypes = [NSSet setWithObjects:@"image/jpeg", nil];
+    //有很多这种block, set方法, 把繁琐的代理设置成block. 很方便用户去使用.
+//    [manager setDataTaskDidReceiveDataBlock:^(NSURLSession * _Nonnull session, NSURLSessionDataTask * _Nonnull dataTask, NSData * _Nonnull data) {
+//
+//    }];
+
+    //https证书验证的代理方法 block()
+//    [manager setAuthenticationChallengeHandler:^id _Nonnull(NSURLSession * _Nonnull session, NSURLSessionTask * _Nonnull task, NSURLAuthenticationChallenge * _Nonnull challenge, void (^ _Nonnull completionHandler)(NSURLSessionAuthChallengeDisposition, NSURLCredential * _Nullable)) {
+//        <#code#>
+//    }];
+
+//    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+//        [manager GET:urlStr parameters:nil headers:nil progress:^(NSProgress * _Nonnull downloadProgress) {
+//            NSLog(@"progress = %@",downloadProgress);
+//        } success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
+//            NSLog(@"response = %@\nresponseObject = %@",task, responseObject);
+//            NSLog(@"thread: %@",NSThread.currentThread);
+//            imageView.image = [UIImage imageWithData:responseObject];
+//        } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
+//            NSLog(@"error = %@",error);
+//        }];
+//    });
+
+
+        /*
+         typedef NS_ENUM(NSInteger, AFNetworkReachabilityStatus) {
+             AFNetworkReachabilityStatusUnknown          = -1,
+             AFNetworkReachabilityStatusNotReachable     = 0,
+             AFNetworkReachabilityStatusReachableViaWWAN = 1,
+             AFNetworkReachabilityStatusReachableViaWiFi = 2,
+         };
+
+         */
+    //    AFNetworkReachabilityManager *reachabilityManager = [AFNetworkReachabilityManager sharedManager];
+
+
+
+
+
+//    [manager.reachabilityManager setReachabilityStatusChangeBlock:^(AFNetworkReachabilityStatus status) {
+//        switch (status) {
+//            case AFNetworkReachabilityStatusUnknown:
+//                NSLog(@"未知网络~");
+//                break;
+//            case AFNetworkReachabilityStatusNotReachable:
+//                NSLog(@"无网络~");
+//                break;
+//            case AFNetworkReachabilityStatusReachableViaWWAN:
+//                NSLog(@"使用数据网络~");
+//                break;
+//            case AFNetworkReachabilityStatusReachableViaWiFi:
+//                NSLog(@"使用wifi~");
+//                break;
+//            default:
+//                break;
+//        }
+//    }];
+//    //开始监控
+//    [manager.reachabilityManager startMonitoring];
 }
+
 
 - (void)btnAction {
     NSLog(@"btnAction!!!");
@@ -601,9 +838,10 @@ void msg_forwarding() {
 
 - (void)threadElse {
 //    NSRunLoop *rl = [NSRunLoop currentRunLoop];
-    [NSTimer scheduledTimerWithTimeInterval:1 repeats:YES block:^(NSTimer * _Nonnull timer) {
+    [NSTimer scheduledTimerWithTimeInterval:1 repeats:NO block:^(NSTimer * _Nonnull timer) {
         NSLog(@"timer 1");
-    }];
+    }]; //若repeat改成NO, 则thread销毁, 会打印下面的after.
+    [NSRunLoop.currentRunLoop addPort:[NSMachPort port] forMode:NSRunLoopCommonModes]; //也可以保活runloop,从而保活线程
     [[NSRunLoop currentRunLoop] run];
     NSLog(@"after");
 }

@@ -489,7 +489,7 @@ static NSString * const AFNSURLSessionTaskDidSuspendNotification = @"com.alamofi
     }
 
     self.sessionConfiguration = configuration;
-
+    //此queue即NSURLSession代理和回调的queue (manager的session是懒加载)
     self.operationQueue = [[NSOperationQueue alloc] init];
     self.operationQueue.maxConcurrentOperationCount = 1;
 
@@ -603,6 +603,9 @@ static NSString * const AFNSURLSessionTaskDidSuspendNotification = @"com.alamofi
     delegate.completionHandler = completionHandler;
 
     dataTask.taskDescription = self.taskDescriptionForSessionTasks;
+    //把下载任务dataTask (task_id) 和 AF的网络代理 映射在一起
+    //有一个task就会有一个AFdelegate的
+    //task系统的delegate是在设置session的时候绑定的AFURLSessionManager, 可去manager初始化去看
     [self setDelegate:delegate forTask:dataTask];
 
     delegate.uploadProgressBlock = uploadProgressBlock;
@@ -734,8 +737,9 @@ static NSString * const AFNSURLSessionTaskDidSuspendNotification = @"com.alamofi
                              downloadProgress:(nullable void (^)(NSProgress *downloadProgress)) downloadProgressBlock
                             completionHandler:(nullable void (^)(NSURLResponse *response, id _Nullable responseObject,  NSError * _Nullable error))completionHandler {
 
+    //调用系统方法生成 dataTask
     NSURLSessionDataTask *dataTask = [self.session dataTaskWithRequest:request];
-
+    //afn使用代理处理网络请求的回调, 每个dataTask都有自己的代理回调.  不过包装了一层,代理回调方法写在了AFURLSessionManagerTaskDelegate类中
     [self addDelegateForDataTask:dataTask uploadProgress:uploadProgressBlock downloadProgress:downloadProgressBlock completionHandler:completionHandler];
 
     return dataTask;

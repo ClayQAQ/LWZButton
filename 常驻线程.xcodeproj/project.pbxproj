@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		6F0C266B259759DC00821BEB /* SendActionBtn.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F0C266A259759DC00821BEB /* SendActionBtn.m */; };
 		6F0C266E25975BB300821BEB /* UIControl+hookSendAction.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F0C266D25975BB300821BEB /* UIControl+hookSendAction.m */; };
+		6F110628269892E100A4027C /* MyThread.m in Sources */ = {isa = PBXBuildFile; fileRef = 6F110627269892E100A4027C /* MyThread.m */; };
 		6FCD9EE5253192A600F39878 /* LWZSingleton.m in Sources */ = {isa = PBXBuildFile; fileRef = 6FCD9EE4253192A600F39878 /* LWZSingleton.m */; };
 		6FF0C0F124ADBAE8000AA417 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 6FF0C0F024ADBAE8000AA417 /* AppDelegate.m */; };
 		6FF0C0F424ADBAE8000AA417 /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 6FF0C0F324ADBAE8000AA417 /* SceneDelegate.m */; };
@@ -27,6 +28,8 @@
 		6F0C266A259759DC00821BEB /* SendActionBtn.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SendActionBtn.m; sourceTree = "<group>"; };
 		6F0C266C25975BB300821BEB /* UIControl+hookSendAction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIControl+hookSendAction.h"; sourceTree = "<group>"; };
 		6F0C266D25975BB300821BEB /* UIControl+hookSendAction.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIControl+hookSendAction.m"; sourceTree = "<group>"; };
+		6F110626269892E100A4027C /* MyThread.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MyThread.h; sourceTree = "<group>"; };
+		6F110627269892E100A4027C /* MyThread.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MyThread.m; sourceTree = "<group>"; };
 		6F1A758D954CBD1345502FDC /* Pods-常驻线程.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-常驻线程.debug.xcconfig"; path = "Target Support Files/Pods-常驻线程/Pods-常驻线程.debug.xcconfig"; sourceTree = "<group>"; };
 		6FCD9EE3253192A600F39878 /* LWZSingleton.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LWZSingleton.h; sourceTree = "<group>"; };
 		6FCD9EE4253192A600F39878 /* LWZSingleton.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LWZSingleton.m; sourceTree = "<group>"; };
@@ -100,6 +103,8 @@
 				6FF0C0F324ADBAE8000AA417 /* SceneDelegate.m */,
 				6FF0C0F524ADBAE8000AA417 /* ViewController.h */,
 				6FF0C0F624ADBAE8000AA417 /* ViewController.m */,
+				6F110626269892E100A4027C /* MyThread.h */,
+				6F110627269892E100A4027C /* MyThread.m */,
 				6FCD9EE3253192A600F39878 /* LWZSingleton.h */,
 				6FCD9EE4253192A600F39878 /* LWZSingleton.m */,
 				6F0C2669259759DC00821BEB /* SendActionBtn.h */,
@@ -214,6 +219,7 @@
 				6F0C266B259759DC00821BEB /* SendActionBtn.m in Sources */,
 				6FF0C0F724ADBAE8000AA417 /* ViewController.m in Sources */,
 				6FF0C0F124ADBAE8000AA417 /* AppDelegate.m in Sources */,
+				6F110628269892E100A4027C /* MyThread.m in Sources */,
 				6FF0C10224ADBAE9000AA417 /* main.m in Sources */,
 				6FCD9EE5253192A600F39878 /* LWZSingleton.m in Sources */,
 				6FF0C0F424ADBAE8000AA417 /* SceneDelegate.m in Sources */,

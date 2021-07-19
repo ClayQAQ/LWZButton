@@ -20,6 +20,9 @@ PODS:
   - LWZButton (1.0.1)
   - Masonry (1.1.0)
   - ReactiveObjC (3.1.1)
+  - SDWebImage (5.10.0):
+    - SDWebImage/Core (= 5.10.0)
+  - SDWebImage/Core (5.10.0)
 
 DEPENDENCIES:
   - A_Category
@@ -27,6 +30,7 @@ DEPENDENCIES:
   - LWZButton
   - Masonry
   - ReactiveObjC
+  - SDWebImage
 
 SPEC REPOS:
   https://github.com/CocoaPods/Specs.git:
@@ -35,6 +39,7 @@ SPEC REPOS:
     - LWZButton
     - Masonry
     - ReactiveObjC
+    - SDWebImage
   https://github.com/ModulizationDemo/PrivatePods.git:
     - A_Category
 
@@ -45,7 +50,8 @@ SPEC CHECKSUMS:
   LWZButton: 7dd44b4122934dc8b19adfcd6358aba1aa6d02cf
   Masonry: 678fab65091a9290e40e2832a55e7ab731aad201
   ReactiveObjC: 011caa393aa0383245f2dcf9bf02e86b80b36040
+  SDWebImage: 9169792e9eec3e45bba2a0c02f74bf8bd922d1ee
 
-PODFILE CHECKSUM: c94311695a15fc103ec77edd3b1b34fd172dd8b4
+PODFILE CHECKSUM: 871e0a66bff438ca044a5a5c637c7a5329d83d7e
 
 COCOAPODS: 1.8.3

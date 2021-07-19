@@ -10,4 +10,5 @@ target '常驻线程' do
   pod 'ReactiveObjC'
   pod 'LWZButton'
   pod 'A_Category'
+  pod 'SDWebImage'
 end
