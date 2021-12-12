@@ -16,7 +16,7 @@ static LWZSingleton *singleton;
 
 + (instancetype)shareSingleton {
     if (!singleton) {
-        singleton = [[self.class alloc] init];
+        singleton = [[self alloc] init];
     }
     return singleton;
 }
