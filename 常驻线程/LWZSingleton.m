@@ -23,7 +23,7 @@ static LWZSingleton *singleton;
 
 + (instancetype)allocWithZone:(struct _NSZone *)zone {
     dispatch_once(&onceToken, ^{
-        singleton = [[super allocWithZone:zone] init];
+        singleton = [super allocWithZone:zone]; //这里不init, 不过依然是返回id对象
     });
     return singleton;
 }

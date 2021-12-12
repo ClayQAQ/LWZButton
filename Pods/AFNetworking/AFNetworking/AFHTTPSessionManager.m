@@ -354,4 +354,8 @@
     return HTTPClient;
 }
 
+- (void)dealloc {
+    NSLog(@"AFHTTPSessionManager 已经销毁!!");
+}
+
 @end

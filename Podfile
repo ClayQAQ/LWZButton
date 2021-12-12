@@ -11,4 +11,6 @@ target '常驻线程' do
   pod 'LWZButton'
   pod 'A_Category'
   pod 'SDWebImage'
+  pod 'YYAsyncLayer'
+
 end

@@ -22,6 +22,10 @@
 
 #import "MyThread.h"
 
+#import <UIImageView+WebCache.h>
+
+#import "AsyncView.h"
+
 //Pet - Dog  验证+initialize相关
 @interface Pet : NSObject
 
@@ -99,6 +103,13 @@
 @property (nonatomic, strong) NSLock *lock;
 @property (nonatomic, weak) NSString *poolStr;
 @property (nonatomic, weak) NSArray *weakArr;
+@property (nonatomic, weak) AFHTTPSessionManager *weakManager;
+
+@property (nonatomic, strong) NSLock *testLock;
+@property (nonatomic, strong) NSCondition *testCondition;
+@property (nonatomic, strong) NSConditionLock *testConditionLock;
+@property (nonatomic, strong) NSRecursiveLock *testRecursiveLock;
+
 @end
 
 NSString *mutexStr = @"";
@@ -108,6 +119,7 @@ NSString *mutexStr = @"";
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    self.view.backgroundColor = UIColor.whiteColor;
     //injectione的通知, 功能等价于 - (void)injected {方法.
 //    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(configureView) name:@"INJECTION_BUNDLE_NOTIFICATION" object:nil];
 
@@ -124,7 +136,7 @@ NSString *mutexStr = @"";
 
 //    [self gcdAndThread]; //常驻线程
 //    [self taggedPointer];
-//    [self singletonAndKVO]; //单例和KVO
+    [self singletonAndKVO]; //单例和KVO
 //    [self pointer_and_object_test];
 //    [self invocation_invoke_test]; //invocation的使用 performSelector返回值 方法转发
 //    [self btn_hitTest]; //增加btn点击范围; 动态库注入injection;
@@ -145,6 +157,228 @@ NSString *mutexStr = @"";
 //    [self gcd_dispatch_semaphore]; //信号量 gcd锁 //信号量semaphore , +1 signal, -1 wait,  >=0都不阻塞
 //    [self initializeAbout]; //+initialize 初始化方法相关
 //    [self testMethodSwizzling]; //测试MethodSwizzling, 为什么非要判断 "origin方法在是在父类 而非当前类"
+//    [self sdwebimage]; //SDWebImage框架解析
+
+//    [self lock_and_condition_and_conditionLock]; //测试4种锁,nslock, nscondition, nsconditionlock, nsrecursivelock
+//    [self testDrawRect];
+//    [self testOffScreenRender]; // 离屏渲染, 圆角测试
+}
+
+- (void)testOffScreenRender {
+    UIImage *img = [UIImage imageNamed:@"test2"];
+
+    //不会
+    //只有单背景的圆角渲染
+    UIButton *btn1 = [UIButton buttonWithType:UIButtonTypeCustom];
+    btn1.frame = CGRectMake(50, 100, 50, 50);
+    btn1.backgroundColor = UIColor.blueColor;
+    btn1.layer.cornerRadius = 25;
+    btn1.clipsToBounds = YES;
+    [self.view addSubview:btn1];
+
+    //会
+    //虽然单图片, 但是或许因为还有背景 虽然没上色,  还有titleLabel 虽然没设置... 我猜的, 反正不如imageview优化好
+    UIButton *btn2 = [UIButton buttonWithType:UIButtonTypeCustom];
+    btn2.frame = CGRectMake(50, 275, 50, 50);
+//    btn1.backgroundColor = UIColor.blueColor;
+    [btn2 setBackgroundImage:img forState:UIControlStateNormal];
+    btn2.layer.cornerRadius = 25;
+    btn2.clipsToBounds = YES;
+    [self.view addSubview:btn2];
+
+    //不会
+    //单UIImageView的图片圆角 不会 (优化过)
+    UIImageView *v1 = [[UIImageView alloc] initWithImage:img];
+    v1.frame = CGRectMake(50, 340, 50, 50);
+    v1.layer.cornerRadius = 25;
+    v1.clipsToBounds = YES;
+    [self.view addSubview:v1];
+
+    //会
+    //除了图片. 还有背景色,  渲染多个圆角, 依然会离屏
+    UIImageView *v2 = [[UIImageView alloc] initWithImage:img];
+    v2.backgroundColor = UIColor.blueColor;
+    v2.frame = CGRectMake(50, 400, 50, 50);
+    v2.layer.cornerRadius = 25;
+    v2.clipsToBounds = YES;
+    [self.view addSubview:v2];
+
+
+}
+
+- (void)testDrawRect {
+    AsyncView *v = [AsyncView new];
+    v.frame = self.view.bounds;
+    [self.view addSubview:v];
+}
+
+- (void)lock_and_condition_and_conditionLock {
+    UISwitch *s = [[UISwitch alloc] initWithFrame:CGRectMake(50, 100, 80, 50)];
+    [self.view addSubview:s];
+
+    _testLock = [NSLock new];
+    _testCondition = [NSCondition new];
+    _testConditionLock = [NSConditionLock new];
+    _testRecursiveLock = [NSRecursiveLock new];
+
+//    //NSLock
+//    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+//        NSLog(@"testlock1");
+//        [self test_lock];
+//        [self test_lock];
+////        [self test_lock2];
+//    });
+//    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+//        NSLog(@"testlock2");
+//        [self test_lock];
+//    });
+    //try timeout
+//    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+//        [self test_try_lock];
+//        [self test_try_lock];
+//    });
+
+
+//    //递归锁
+//    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+//        [self test_recursive_lock];
+//        [self test_recursive_lock2];
+//    });
+
+//    //条件锁
+//    //condition
+//    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+//        [self test_condition];
+//    });
+//    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+//        [self test_condition2];
+//    });
+//    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+//        [self test_condition_not_mutex];
+//        [self test_condition_not_mutex];
+//    });
+
+
+    //condition lock
+//    dispatch_async(dispatch_get_main_queue(), ^{
+//        [self test_condition_lock];
+//        [self test_condition_lock2];
+//    });
+//    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+//        [self test_condition_lock3];
+//    });
+
+//    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+//        [self test_condition_lock_is_mutex];
+//        [self test_condition_lock_is_mutex];
+//    });
+}
+
+- (void)test_condition_lock {
+    [_testConditionLock lock];
+    NSLog(@"开始执行 test_condition_lock1...");
+    [_testConditionLock unlockWithCondition:2];
+}
+
+- (void)test_condition_lock2 {
+    [_testConditionLock lockWhenCondition:1]; // 若在主线程, 此方法因为cond而得不到锁, 则会卡死在这. lock3方法不会去执行
+    NSLog(@"开始执行 test_condition_lock2...");
+    [_testConditionLock unlockWithCondition:2];
+}
+
+- (void)test_condition_lock3 {
+    [_testConditionLock lockWhenCondition:2];
+    NSLog(@"开始执行 test_condition_lock3...");
+    [_testConditionLock unlockWithCondition:1];
+}
+
+- (void)test_condition_lock_is_mutex {
+    [_testConditionLock lock];
+    NSLog(@"开始执行 test_condition_not_mutex...");
+    sleep(3);
+    [_testConditionLock unlock];
+}
+
+- (void)test_condition {
+    [_testCondition lock];
+    NSLog(@"开始执行 test_condition1...");
+    [_testCondition wait]; //之后的不会执行, 除非被_testCondition对象被唤醒 signal
+    NSLog(@"condition 等待1");
+    [_testCondition unlock];
+}
+
+- (void)test_condition2 {
+    [_testCondition lock]; //这个可以在没有锁的情况下, 得到锁(lock) .
+//    [_testCondition signal];
+    NSLog(@"开始执行 test_condition2...");
+//    [_testCondition wait]; //之后的不会执行, 除非被_testCondition对象被唤醒 signal
+//    NSLog(@"condition 等待2");
+    [_testCondition unlock];
+}
+
+- (void)test_condition_not_mutex {
+    [_testCondition lock]; //这个可以在没有锁的情况下, 得到锁(lock) . 现在测试又互斥锁了...
+    NSLog(@"开始执行 test_condition_not_mutex...");
+    sleep(3);
+    [_testCondition wait];
+    [_testCondition unlock];
+}
+
+- (void)test_lock {
+    [_testLock lock];
+    NSLog(@"开始执行 test lock...");
+//    [_testLock lock];  //会直接永远卡在这
+//    NSLog(@"开始执行 递归锁...");
+//    [_testLock unlock];
+
+    sleep(3);
+    [_testLock unlock];
+}
+
+
+- (void)test_try_lock {
+    NSDate *date = [NSDate date];
+    [date dateByAddingTimeInterval:1];
+    [_testLock lockBeforeDate:date]; //和trylock一样, 并不会无视锁, 只是返回是否获得锁成功
+    NSLog(@"开始执行 test_try_lock...");
+    sleep(5);
+    [_testLock unlock];
+}
+
+- (void)test_lock2 {
+    [_testLock lock];
+    NSLog(@"开始执行 test lock2...");
+    sleep(3);
+    [_testLock unlock];
+}
+
+- (void)test_recursive_lock {
+    [_testRecursiveLock lock];
+    NSLog(@"开始执行 test test_recursive_lock...");
+//    [_testRecursiveLock lock];
+//    NSLog(@"开始执行 递归 test_recursive_lock...");
+//    [_testRecursiveLock unlock];
+    sleep(3);
+    [_testRecursiveLock unlock];
+}
+
+- (void)test_recursive_lock2 {
+    [_testRecursiveLock lock]; //若_testRecursiveLock被用了, 还没归还unlock. 则此处卡主 无法lock.
+    NSLog(@"开始执行 test test_recursive_lock2...");
+    [_testRecursiveLock unlock];
+}
+
+
+- (void)sdwebimage {
+    UIImageView *imageView = [UIImageView new];
+    imageView.contentMode = UIViewContentModeScaleAspectFit;
+    [self.view addSubview:imageView];
+    [imageView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.size.mas_equalTo(self.view);
+        make.center.equalTo(self.view);
+    }];
+    NSString *urlString = @"https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fi0.hdslb.com%2Fbfs%2Farticle%2F44715554d10b95e00e4029a79aecda869b0383e1.jpg&refer=http%3A%2F%2Fi0.hdslb.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1630401067&t=5d42a27fe95547fcd4fa1c212f633576";
+    [imageView sd_setImageWithURL:[NSURL URLWithString:urlString]];
 }
 
 - (void)testMethodSwizzling {
@@ -172,16 +406,18 @@ NSString *mutexStr = @"";
 - (void)gcd_dispatch_semaphore {  //信号量semaphore , +1 signal, -1 wait,  >=0都不阻塞
 //    dispatch_semaphore_t semap = dispatch_semaphore_create(1);//会崩溃, 应该是局部变量释放了  在block造成野指针问题.  使用全局变量保证semap始终存在, 或者静态局部估计也行.
     static dispatch_semaphore_t semap;
-    semap = dispatch_semaphore_create(1);
-    NSLog(@"1");
-    dispatch_semaphore_wait(semap, DISPATCH_TIME_FOREVER);
-    NSLog(@"0"); //semaphore = 0时, 打印
+    semap = dispatch_semaphore_create(0);
+    NSLog(@"start");
+//    long ret =  dispatch_semaphore_wait(semap, DISPATCH_TIME_FOREVER);//wait 没锁住返回0, 若锁住了则返回非0
+    long ret =  dispatch_semaphore_wait(semap, dispatch_time(DISPATCH_TIME_NOW, 5 * NSEC_PER_SEC));
+    NSLog(@"%li",ret);
+//    NSLog(@"0"); //semaphore = 0时, 打印
 
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
         NSLog(@"queue");
         dispatch_semaphore_signal(semap);
     });
-
+    
     dispatch_semaphore_wait(semap, DISPATCH_TIME_FOREVER);
     NSLog(@"-1");
 
@@ -698,6 +934,11 @@ NSString *mutexStr = @"";
         NSLog(@"error = %@",error);
     }];
 
+    //测试manager生命周期  - 关键是其被session强引用, 导致相互引用
+    _weakManager = manager;
+    [self performSelector:@selector(invalidAFNManager) withObject:nil afterDelay:5];
+
+
 
 //    manager.completionQueue = dispatch_get_global_queue(0, 0);//默认从主队列回调
 //    manager.responseSerializer.acceptableContentTypes = [NSSet setWithObjects:@"image/jpeg", nil];
@@ -759,6 +1000,10 @@ NSString *mutexStr = @"";
 //    }];
 //    //开始监控
 //    [manager.reachabilityManager startMonitoring];
+}
+
+- (void)invalidAFNManager {
+    [_weakManager invalidateSessionCancelingTasks:YES resetSession:NO];
 }
 
 

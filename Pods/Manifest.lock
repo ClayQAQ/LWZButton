@@ -23,6 +23,7 @@ PODS:
   - SDWebImage (5.10.0):
     - SDWebImage/Core (= 5.10.0)
   - SDWebImage/Core (5.10.0)
+  - YYAsyncLayer (1.0)
 
 DEPENDENCIES:
   - A_Category
@@ -31,15 +32,17 @@ DEPENDENCIES:
   - Masonry
   - ReactiveObjC
   - SDWebImage
+  - YYAsyncLayer
 
 SPEC REPOS:
-  https://github.com/CocoaPods/Specs.git:
+  https://github.com/cocoapods/specs.git:
     - AFNetworking
     - CTMediator
     - LWZButton
     - Masonry
     - ReactiveObjC
     - SDWebImage
+    - YYAsyncLayer
   https://github.com/ModulizationDemo/PrivatePods.git:
     - A_Category
 
@@ -51,7 +54,8 @@ SPEC CHECKSUMS:
   Masonry: 678fab65091a9290e40e2832a55e7ab731aad201
   ReactiveObjC: 011caa393aa0383245f2dcf9bf02e86b80b36040
   SDWebImage: 9169792e9eec3e45bba2a0c02f74bf8bd922d1ee
+  YYAsyncLayer: df6b01ebc695c5f6b4c15dd5c23fa3e081eb25c0
 
-PODFILE CHECKSUM: 871e0a66bff438ca044a5a5c637c7a5329d83d7e
+PODFILE CHECKSUM: cded083aa34dd4ab86657af6b9c77b4d6fcd1e13
 
-COCOAPODS: 1.8.3
+COCOAPODS: 1.7.0
